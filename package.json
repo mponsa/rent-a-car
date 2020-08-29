@@ -1,0 +1,19 @@
+{
+  "name": "rent-a-car",
+  "version": "1.0.0",
+  "description": "Sistema de alquiler de vehículos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mponsa/rent-a-car.git"
+  },
+  "author": "uade",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mponsa/rent-a-car/issues"
+  },
+  "homepage": "https://github.com/mponsa/rent-a-car#readme"
+}
