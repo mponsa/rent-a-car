@@ -7,7 +7,7 @@ const port = 8080;
 //Controllers.
 const vehicleController = require(path.join(__dirname,'./src/controllers/vehicleController.js'))
 
-const { initializeApp  } = require('./app/utils/firebase');
+const { initializeApp  } = require('./src/utils/firebase');
 
 initializeApp();
 
@@ -20,7 +20,7 @@ app.get('/', (req,res) => {
 })
 
 app.get('/ping', (req,res) => {
-    req.status(200).send('pong')
+    res.status(200).send('pong')
 })
 
 app.post('/vehicles', (req,res) => {
