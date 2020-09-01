@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/mponsa/rent-a-car/issues"
   },
-  "homepage": "https://github.com/mponsa/rent-a-car#readme"
+  "homepage": "https://github.com/mponsa/rent-a-car#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "path": "^0.12.7"
+  }
 }
