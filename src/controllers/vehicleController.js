@@ -48,7 +48,7 @@ const storeVehicle = async (vehicle) => {
 const getVehicles = async () => {
     try {
         let vehicles = [];
-        vehicles = (await admin.firestore().collection('vehicles').get())._docs().map((doc) => doc.data());
+        vehicles = (await admin.firestore().collection('vehicles').get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});
         return ({vehicles, code:200});
     }
     catch(error) {
