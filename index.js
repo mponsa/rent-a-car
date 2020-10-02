@@ -27,8 +27,8 @@ app.get('/ping', (req, res) => {
 })
 
 // PATH: VEHICLES
-app.post('/vehicles', [
-    check('vehicle', 'Debe ingresar un vehiculo')
+app.post('/vehicles', [ // CREATE VEHICLE
+    check('vehicle', 'You must insert a vehicle')
         .not()
         .isEmpty()
 ], (req, res) => {
@@ -36,12 +36,37 @@ app.post('/vehicles', [
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    vehicleController.createVehicle(req.body).then(
+    vehicleController.createVehicle(req.body.vehicle).then(
         (response) => {
             res.status(response.code).send(response)
         }
     )
 })
+
+app.put('/vehicles/:id', [  // MODIFY VEHICLE
+    check('vehicle', 'You must insert a vehicle')
+        .not()
+        .isEmpty()
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    vehicleController.updateVehicle(req.params.id, req.body.vehicle).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+})
+
+app.delete('/vehicles/:id', (req, res) => { //DELETE VEHICLE
+    vehicleController.deleteVehicle(req.params.id).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+})
+
 
 app.get('/vehicles', (req, res) => { // GET ALL VEHICLES
     vehicleController.getVehicles().then(
@@ -53,6 +78,14 @@ app.get('/vehicles', (req, res) => { // GET ALL VEHICLES
 
 app.get('/vehicles/:id', (req, res) => { // GET ONE VEHICLE FROM ID    
     vehicleController.getVehicle(req.params.id).then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    );
+})
+
+app.get('/vehicles/airport/:id', (req, res) => { // GET ALL VEHICLES FROM AIRPORT   
+    vehicleController.getVehiclesFromAirport(req.params.id).then(
         (response) => {
             res.status(response.code).send(response);
         }
