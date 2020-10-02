@@ -8,6 +8,7 @@ const port = 8080;
 //Controllers.
 const vehicleController = require(path.join(__dirname, './src/controllers/vehicleController.js'))
 const rentController = require(path.join(__dirname, './src/controllers/rentController.js'))
+const auth = require(path.join(__dirname,'./src/middleware/auth.js'))
 
 const { initializeApp } = require('./src/utils/firebase');
 const { response } = require('express');
@@ -23,6 +24,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/ping', (req, res) => {
+    res.status(200).send('pong')
+})
+
+app.get('/authPing', auth, (req,res) => {
     res.status(200).send('pong')
 })
 
