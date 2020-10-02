@@ -3,8 +3,9 @@ const jwtDecode = require('jwt-decode')
 const jwt = require('jsonwebtoken')
 
 
-const login = (user,password) => {}
+const login = (user,password) => {
 
+}
 
 const validateUserToken = async (token) => {
     const jwtDecoded = jwtDecode(token, {header: true})

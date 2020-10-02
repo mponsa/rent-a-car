@@ -32,11 +32,10 @@ app.get('/authPing', auth, (req,res) => {
 })
 
 // PATH: VEHICLES
-app.post('/vehicles', [ // CREATE VEHICLE
-    check('vehicle', 'You must insert a vehicle')
-        .not()
-        .isEmpty()
-], (req, res) => {
+app.post('/vehicles',  // CREATE VEHICLE
+    [check('vehicle', 'You must insert a vehicle').not().isEmpty()],
+     auth,
+    (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -52,7 +51,7 @@ app.put('/vehicles/:id', [  // MODIFY VEHICLE
     check('vehicle', 'You must insert a vehicle')
         .not()
         .isEmpty()
-], (req, res) => {
+], auth, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -64,7 +63,7 @@ app.put('/vehicles/:id', [  // MODIFY VEHICLE
     )
 })
 
-app.delete('/vehicles/:id', (req, res) => { //DELETE VEHICLE
+app.delete('/vehicles/:id', auth, (req, res) => { //DELETE VEHICLE
     vehicleController.deleteVehicle(req.params.id).then(
         (response) => {
             res.status(response.code).send(response)
@@ -102,7 +101,7 @@ app.post('/rent', [
     check('rent', 'Debe ingresar una renta')
         .not()
         .isEmpty()
-], (req, res) => {
+], auth, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
