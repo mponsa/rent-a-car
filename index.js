@@ -128,8 +128,8 @@ app.post('/models', [
     )
 })
 
-app.get('/models', (req,res) => {
-    vehicleController.getModels().then(
+app.get('/models/:brand', (req,res) => {
+    vehicleController.getModels(req.params.brand).then(
         (response) => {
             res.status(response.code).send(response);
         }

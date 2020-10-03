@@ -153,10 +153,10 @@ const getBrands = async () => {
     }
 }
 
-const getModels = async () => {
+const getModels = async (brand) => {
     try {
         let models = {};
-        models = (await admin.firestore().collection('models').get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});
+        models = (await admin.firestore().collection('models').where("brand", "==", brand).get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});
         return ({models, code:200});
     }
     catch(error) {
