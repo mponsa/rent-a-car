@@ -55,6 +55,46 @@ app.get('/vehicles/:id', (req,res) => { // GET ONE VEHICLE FROM ID
     );        
 })
 
+app.post('/brands', [
+    check('brand', 'Debe ingresar una marca')
+      .not()
+      .isEmpty()
+  ], (req,res) => {
+    vehicleController.createBrand(req.body.brand).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+})
+
+app.get('/brands', (req,res) => {
+    vehicleController.getBrands().then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    );
+})
+
+app.post('/models', [
+    check('model', 'Debe ingresar un modelo')
+      .not()
+      .isEmpty()
+  ], (req,res) => {
+    vehicleController.createModel(req.body.model).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+})
+
+app.get('/models', (req,res) => {
+    vehicleController.getModels().then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    );
+})
+
 // PATH: RENT
 app.post('/rent', [
     check('rent', 'Debe ingresar una renta')
