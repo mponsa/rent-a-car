@@ -9,6 +9,7 @@ module.exports = (req, res, next) => {
           next()
       })
       .catch(error => {
+          console.log(error.message)
           res.status(401).send({msg:"Unauthorized!", code:401})
       })
   };
