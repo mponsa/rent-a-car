@@ -63,7 +63,7 @@ app.put('/vehicles/:id', [  // MODIFY VEHICLE
     )
 })
 
-app.delete('/vehicles/:id', auth, (req, res) => { //DELETE VEHICLE
+app.delete('/vehicles/:id', auth, (req, res) => { // DELETE VEHICLE
     vehicleController.deleteVehicle(req.params.id).then(
         (response) => {
             res.status(response.code).send(response)
@@ -71,8 +71,7 @@ app.delete('/vehicles/:id', auth, (req, res) => { //DELETE VEHICLE
     )
 })
 
-
-app.get('/vehicles', (req, res) => { // GET ALL VEHICLES
+app.get('/vehicles', auth, (req, res) => { // GET ALL VEHICLES
     vehicleController.getVehicles().then(
         (response) => {
             res.status(response.code).send(response);
@@ -80,7 +79,7 @@ app.get('/vehicles', (req, res) => { // GET ALL VEHICLES
     );
 })
 
-app.get('/vehicles/:id', (req, res) => { // GET ONE VEHICLE FROM ID    
+app.get('/vehicles/:id', auth, (req, res) => { // GET ONE VEHICLE FROM ID    
     vehicleController.getVehicle(req.params.id).then(
         (response) => {
             res.status(response.code).send(response);
@@ -88,7 +87,7 @@ app.get('/vehicles/:id', (req, res) => { // GET ONE VEHICLE FROM ID
     );
 })
 
-app.get('/vehicles/airport/:id', (req, res) => { // GET ALL VEHICLES FROM AIRPORT   
+app.get('/vehicles/airport/:id', auth, (req, res) => { // GET ALL VEHICLES FROM AIRPORT   
     vehicleController.getVehiclesFromAirport(req.params.id).then(
         (response) => {
             res.status(response.code).send(response);
@@ -96,7 +95,7 @@ app.get('/vehicles/airport/:id', (req, res) => { // GET ALL VEHICLES FROM AIRPOR
     );
 })
 
-app.post('/brands', [
+app.post('/brands', [ // CREATE BRANDS
     check('brand', 'Debe ingresar una marca')
       .not()
       .isEmpty()
@@ -108,7 +107,7 @@ app.post('/brands', [
     )
 })
 
-app.get('/brands', (req,res) => {
+app.get('/brands', auth, (req,res) => { // GET BRANDS
     vehicleController.getBrands().then(
         (response) => {
             res.status(response.code).send(response);
@@ -116,11 +115,11 @@ app.get('/brands', (req,res) => {
     );
 })
 
-app.post('/models', [
+app.post('/models', [ // CREATE MODELS
     check('model', 'Debe ingresar un modelo')
       .not()
       .isEmpty()
-  ], (req,res) => {
+    ], (req,res) => {
     vehicleController.createModel(req.body.model).then(
         (response) => {
             res.status(response.code).send(response)
@@ -128,12 +127,33 @@ app.post('/models', [
     )
 })
 
-app.get('/models/:brand', (req,res) => {
+app.get('/models/:brand', auth, (req,res) => { // GET MODELS
     vehicleController.getModels(req.params.brand).then(
         (response) => {
             res.status(response.code).send(response);
         }
     );
+})
+
+app.post('/categories', [ // CREATE CATEGORY
+    check('category', 'Dee ingresar una categoria')
+        .not()
+        .isEmpty()
+    ], (req,res) => {
+        vehicleController.createCategory(req.body.category).then(
+            (response) => {
+                res.status(response.code).send(response)
+            }
+        )
+    }
+)
+
+app.get('/categories', auth, (req,res) => { // GET CATEGORIES
+    vehicleController.getCategories().then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    )
 })
 
 // PATH: RENT

@@ -63,6 +63,21 @@ const createModel = async (body) => {
     }
 }
 
+const createCategory = async (body) => {
+    try{
+        let category = validateModel(body)
+        let id = await storeCategory(category)
+
+        let msg = `Succesfully created category`
+        console.log(msg)
+        return ({msg, id, code:200})
+    }catch(error){
+        let msg = `Error while creating category: ${error.message}`
+        console.log(msg)
+        return ({msg, code: 500})
+    }
+}
+
 const validateModel = (body) => {    
     return body;
 }
@@ -124,6 +139,14 @@ const storeModel = async (model) => {
     }
 }
 
+const storeCategory = async (category) => {
+    if(!category.id){
+        console.log(`Creating category...`)
+        let id = await admin.firestore().collection('categories').add(category)
+        return id;
+    }
+}
+
 const getVehicles = async () => {
     try {
         let vehicles = [];
@@ -166,6 +189,18 @@ const getModels = async (brand) => {
     }
 }
 
+const getCategories = async () => {
+    try{
+        let categories = [];
+        categories = (await admin.firestore().collection('categories').get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});        
+        return ({categories, code:200});
+    }catch(error) {
+        let msg = `Error while getting all categories`
+        console.log(msg)
+        return ({msg, code: 500})
+    }
+}
+
 const getVehicle = async (id) => {
     try {
         let vehicle = {};
@@ -198,4 +233,17 @@ const getVehiclesFromAirport = async (id) => {
     }
 }
 
-module.exports = { createVehicle, createBrand, createModel, getVehicles, getBrands, getModels, getVehicle }
+module.exports = { 
+    createVehicle, 
+    createBrand, 
+    createModel,
+    createCategory , 
+    getVehicles, 
+    getBrands, 
+    getModels,
+    getCategories, 
+    getVehicle, 
+    getVehiclesFromAirport,
+    updateVehicle, 
+    deleteVehicle 
+}
