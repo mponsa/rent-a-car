@@ -78,6 +78,21 @@ const createCategory = async (body) => {
     }
 }
 
+const createExtra = async(body) => {
+    try{
+        let extra = validateModel(body)
+        let id = await storeExtra(extra)
+
+        let msg = `Succesfully created extra`
+        console.log(msg)
+        return ({msg, id, code:200})
+    }catch(error){
+        let msg = `Error while creating extra: ${error.message}`
+        console.log(msg)
+        return ({msg, code: 500})
+    }
+}
+
 const validateModel = (body) => {    
     return body;
 }
@@ -147,6 +162,14 @@ const storeCategory = async (category) => {
     }
 }
 
+const storeExtra = async (extra) => {
+    if(!extra.id){
+        console.log(`Creating extra...`)
+        let id = await admin.firestore().collection('extras').add(extra)
+        return id;
+    }
+}
+
 const getVehicles = async () => {
     try {
         let vehicles = [];
@@ -201,6 +224,18 @@ const getCategories = async () => {
     }
 }
 
+const getExtras = async () => {
+    try{
+        let extras = [];
+        extras = (await admin.firestore().collection('extras').get())._docs().map((doc) => { return {...doc.data(), id: doc.id}});
+        return ({extras, code:200});
+    }catch(error) {
+        let msg = `Error while getting all extras`
+        console.log(msg)
+        return ({msg, code: 500})
+    }
+}
+
 const getVehicle = async (id) => {
     try {
         let vehicle = {};
@@ -237,11 +272,13 @@ module.exports = {
     createVehicle, 
     createBrand, 
     createModel,
-    createCategory , 
+    createCategory, 
+    createExtra,
     getVehicles, 
     getBrands, 
     getModels,
-    getCategories, 
+    getCategories,
+    getExtras, 
     getVehicle, 
     getVehiclesFromAirport,
     updateVehicle, 

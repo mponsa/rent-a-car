@@ -136,7 +136,7 @@ app.get('/models/:brand', auth, (req,res) => { // GET MODELS
 })
 
 app.post('/categories', [ // CREATE CATEGORY
-    check('category', 'Dee ingresar una categoria')
+    check('category', 'Debe ingresar una categoria')
         .not()
         .isEmpty()
     ], (req,res) => {
@@ -150,6 +150,27 @@ app.post('/categories', [ // CREATE CATEGORY
 
 app.get('/categories', auth, (req,res) => { // GET CATEGORIES
     vehicleController.getCategories().then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    )
+})
+
+app.post('/extras', [ // CREATE EXTRA
+    check('extra', 'Debe ingresar un extra')
+        .not()
+        .isEmpty()
+    ], (req,res) => {
+        vehicleController.createExtra(req.body.extra).then(
+            (response) => {
+                res.status(response.code).send(response)
+            }
+        )
+    }
+)
+
+app.get('/extras', auth, (req,res) => { // GET EXTRA
+    vehicleController.getExtras().then(
         (response) => {
             res.status(response.code).send(response);
         }
