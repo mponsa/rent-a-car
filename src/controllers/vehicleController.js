@@ -1,4 +1,8 @@
 const admin = require('firebase-admin');
+const moment = require('moment');
+const rentController = require('./rentController');
+const { parseDate } = require('../utils/utils')
+
 
 let vehicle = {
     id: 0,
@@ -249,16 +253,19 @@ const getVehicle = async (id) => {
     }
 }
 
-const getVehiclesFromAirport = async (id) => {
+const getVehiclesFromAirport = async (id, from, to) => {
     try {
-        let vehicles = [];
-        vehicles = (await admin.firestore().collection('vehicles')
-            .where('airport', '==', Number(id))
+        const vehicles = (await admin.firestore().collection('vehicles')
+            .where('airport', '==', id)
             .where('active', '==', true)
             .get())._docs().map((doc) => {
                 return { ...doc.data(), id: doc.id }
             });
+        
+        const rents = (await rentController.getRents(from,to)).result;
 
+        updateRentStatus(vehicles, rents, parseDate(from))
+        
         return ({ vehicles, code: 200 });
     }
     catch (error) {
@@ -266,6 +273,60 @@ const getVehiclesFromAirport = async (id) => {
         console.log(msg);
         return ({ msg, code: 500 });
     }
+}
+
+const updateRentStatus = (vehicles, rents, from) => {
+    vehicles.forEach(vehicle => {
+        const rentsForVehicle = rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
+            //Transform date.
+            rent.from = parseDate(rent.from)
+            rent.to = parseDate(rent.to)
+            return rent
+        })
+        vehicle.rent_status = buildRentStatus(rentsForVehicle, from)
+    })
+
+    console.log('Vehicles updated.')
+ 
+}
+
+const buildRentStatus = (rents, from) => {
+    if(rents){
+        if(isRented(from,rents[0])){
+            return{
+                status: 'not_available',
+                available_untill: null,
+                available_since: moment(rents[0].to).format().split('T')[0],
+                rents: rents.map(rent => {
+                    rent.to = moment(rent.to).format().split('T')[0]
+                    rent.from = moment(rent.from).format().split('T')[0]
+                    return rent
+                })
+            }
+        }
+        
+        return{
+            status: 'available',
+            available_untill: moment(rents[0].from).format().split('T')[0],
+            available_since: null,
+            rents: rents.map(rent => {
+                rent.to = moment(rent.to).format().split('T')[0]
+                rent.from = moment(rent.from).format().split('T')[0]
+                return rent
+            })
+        }
+    }
+
+    return{
+        status:'available',
+        available_untill: null,
+        available_since: null,
+        rents: []
+    }
+}
+
+const isRented = (from, rent) => {
+    return rent.from <= from && rent.to >= from
 }
 
 module.exports = { 

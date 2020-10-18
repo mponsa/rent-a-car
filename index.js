@@ -9,6 +9,7 @@ const port = 8080;
 const vehicleController = require(path.join(__dirname, './src/controllers/vehicleController.js'))
 const rentController = require(path.join(__dirname, './src/controllers/rentController.js'))
 const auth = require(path.join(__dirname,'./src/middleware/auth.js'))
+const validateQuery = require(path.join(__dirname,'./src/middleware/validateQuery.js'))
 
 const { initializeApp } = require('./src/utils/firebase');
 const { response } = require('express');
@@ -87,8 +88,8 @@ app.get('/vehicles/:id', auth, (req, res) => { // GET ONE VEHICLE FROM ID
     );
 })
 
-app.get('/vehicles/airport/:id', auth, (req, res) => { // GET ALL VEHICLES FROM AIRPORT   
-    vehicleController.getVehiclesFromAirport(req.params.id).then(
+app.get('/vehicles/airport/:id',validateQuery, auth, (req, res) => { // GET ALL VEHICLES FROM AIRPORT AND IT's rent status.
+    vehicleController.getVehiclesFromAirport(req.params.id, req.query.from, req.query.to).then(
         (response) => {
             res.status(response.code).send(response);
         }
@@ -177,12 +178,8 @@ app.get('/extras', auth, (req,res) => { // GET EXTRA
     )
 })
 
-// PATH: RENT
-app.post('/rent', [
-    check('rent', 'Debe ingresar una renta')
-        .not()
-        .isEmpty()
-], auth, (req, res) => {
+// PATH: RENTS
+app.post('/rents', auth, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -194,16 +191,32 @@ app.post('/rent', [
     )
 })
 
-app.get('/rent/:from/:to', (req, res) => { //GET ALL RENT
-    rentController.getRents(req.params.from, req.params.to).then(
+app.get('/rents', validateQuery, auth, (req, res) => { //GET ALL RENTS
+    rentController.getRents(req.query.from, req.query.to).then(
         (response) => {
             res.status(response.code).send(response);
         }
     )
 })
 
-app.get('/rent/:id/:from/:to', (req, res) => { //GET ONE RENT FROM ID
-    rentController.getRent(req.params.id, req.params.from, req.params.to).then(
+app.get('/rents/:id', auth, (req, res) => { //GET ONE RENT FROM ID
+    rentController.getRent(req.params.id).then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    )
+})
+
+app.delete('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
+    rentController.getRent(req.params.id).then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    )
+})
+
+app.put('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
+    rentController.getRent(req.params.id, req.body).then(
         (response) => {
             res.status(response.code).send(response);
         }
