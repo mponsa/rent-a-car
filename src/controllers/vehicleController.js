@@ -277,12 +277,12 @@ const getVehiclesFromAirport = async (id, from, to) => {
 
 const updateRentStatus = (vehicles, rents, from) => {
     vehicles.forEach(vehicle => {
-        const rentsForVehicle = rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
+        const rentsForVehicle = rents ? rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
             //Transform date.
             rent.from = parseDate(rent.from)
             rent.to = parseDate(rent.to)
             return rent
-        })
+        }) : undefined
         vehicle.rent_status = buildRentStatus(rentsForVehicle, from)
     })
 
