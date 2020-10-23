@@ -8,8 +8,8 @@ const port = 8080;
 //Controllers.
 const vehicleController = require(path.join(__dirname, './src/controllers/vehicleController.js'))
 const rentController = require(path.join(__dirname, './src/controllers/rentController.js'))
-const auth = require(path.join(__dirname,'./src/middleware/auth.js'))
-const validateQuery = require(path.join(__dirname,'./src/middleware/validateQuery.js'))
+const auth = require(path.join(__dirname, './src/middleware/auth.js'))
+const validateQuery = require(path.join(__dirname, './src/middleware/validateQuery.js'))
 
 const { initializeApp } = require('./src/utils/firebase');
 const { response } = require('express');
@@ -28,25 +28,36 @@ app.get('/ping', (req, res) => {
     res.status(200).send('pong')
 })
 
-app.get('/authPing', auth, (req,res) => {
+app.get('/authPing', auth, (req, res) => {
     res.status(200).send('pong')
 })
 
 // PATH: VEHICLES
 app.post('/vehicles',  // CREATE VEHICLE
-    [check('vehicle', 'You must insert a vehicle').not().isEmpty()],
-     auth,
+    [check('vehicle', 'Debe ingresar un vehiculo').not().isEmpty(),
+    check('vehicle.licensePlate', 'Debe ingresar una patente').not().isEmpty(),
+    check('vehicle.category', 'Debe ingresar una categoría').not().isEmpty(),
+    check('vehicle.price', 'Debe ingresar un precio').not().isEmpty(),
+    check('vehicle.model', 'Debe ingresar un modelo').not().isEmpty(),
+    check('vehicle.airport', 'Debe ingresar un aeropuerto').not().isEmpty(),
+    check('vehicle.gearBox', 'Debe ingresar un tipo de caja').not().isEmpty(),
+    check('vehicle.brand', 'Debe ingresar una marca').not().isEmpty(),
+    check('vehicle.capacity', 'Debe ingresar la capacidad').not().isEmpty(),
+    check('vehicle.doors', 'Debe ingresar la cantida de puertas').not().isEmpty(),
+    check('vehicle.trunkCapacity', 'Debe ingresar la capacidad del baul').not().isEmpty(),
+    check('vehicle.autonomy', 'Debe ingresar la autonomía').not().isEmpty()],
+    auth,
     (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    vehicleController.createVehicle(req.body.vehicle).then(
-        (response) => {
-            res.status(response.code).send(response)
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
-    )
-})
+        vehicleController.createVehicle(req.body.vehicle).then(
+            (response) => {
+                res.status(response.code).send(response)
+            }
+        )
+    })
 
 app.put('/vehicles/:id', [  // MODIFY VEHICLE
     check('vehicle', 'You must insert a vehicle')
@@ -88,7 +99,7 @@ app.get('/vehicles/:id', auth, (req, res) => { // GET ONE VEHICLE FROM ID
     );
 })
 
-app.get('/vehicles/airport/:id',validateQuery, auth, (req, res) => { // GET ALL VEHICLES FROM AIRPORT AND IT's rent status.
+app.get('/vehicles/airport/:id', validateQuery, auth, (req, res) => { // GET ALL VEHICLES FROM AIRPORT AND IT's rent status.
     vehicleController.getVehiclesFromAirport(req.params.id, req.query.from, req.query.to).then(
         (response) => {
             res.status(response.code).send(response);
@@ -98,9 +109,9 @@ app.get('/vehicles/airport/:id',validateQuery, auth, (req, res) => { // GET ALL 
 
 app.post('/brands', [ // CREATE BRANDS
     check('brand', 'Debe ingresar una marca')
-      .not()
-      .isEmpty()
-  ], (req,res) => {
+        .not()
+        .isEmpty()
+], (req, res) => {
     vehicleController.createBrand(req.body.brand).then(
         (response) => {
             res.status(response.code).send(response)
@@ -108,7 +119,7 @@ app.post('/brands', [ // CREATE BRANDS
     )
 })
 
-app.get('/brands', auth, (req,res) => { // GET BRANDS
+app.get('/brands', auth, (req, res) => { // GET BRANDS
     vehicleController.getBrands().then(
         (response) => {
             res.status(response.code).send(response);
@@ -118,9 +129,9 @@ app.get('/brands', auth, (req,res) => { // GET BRANDS
 
 app.post('/models', [ // CREATE MODELS
     check('model', 'Debe ingresar un modelo')
-      .not()
-      .isEmpty()
-    ], (req,res) => {
+        .not()
+        .isEmpty()
+], (req, res) => {
     vehicleController.createModel(req.body.model).then(
         (response) => {
             res.status(response.code).send(response)
@@ -128,7 +139,7 @@ app.post('/models', [ // CREATE MODELS
     )
 })
 
-app.get('/models/:brand', auth, (req,res) => { // GET MODELS
+app.get('/models/:brand', auth, (req, res) => { // GET MODELS
     vehicleController.getModels(req.params.brand).then(
         (response) => {
             res.status(response.code).send(response);
@@ -140,16 +151,16 @@ app.post('/categories', [ // CREATE CATEGORY
     check('category', 'Debe ingresar una categoria')
         .not()
         .isEmpty()
-    ], (req,res) => {
-        vehicleController.createCategory(req.body.category).then(
-            (response) => {
-                res.status(response.code).send(response)
-            }
-        )
-    }
+], (req, res) => {
+    vehicleController.createCategory(req.body.category).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+}
 )
 
-app.get('/categories', auth, (req,res) => { // GET CATEGORIES
+app.get('/categories', auth, (req, res) => { // GET CATEGORIES
     vehicleController.getCategories().then(
         (response) => {
             res.status(response.code).send(response);
@@ -161,16 +172,16 @@ app.post('/extras', [ // CREATE EXTRA
     check('extra', 'Debe ingresar un extra')
         .not()
         .isEmpty()
-    ], (req,res) => {
-        vehicleController.createExtra(req.body.extra).then(
-            (response) => {
-                res.status(response.code).send(response)
-            }
-        )
-    }
+], (req, res) => {
+    vehicleController.createExtra(req.body.extra).then(
+        (response) => {
+            res.status(response.code).send(response)
+        }
+    )
+}
 )
 
-app.get('/extras', auth, (req,res) => { // GET EXTRA
+app.get('/extras', auth, (req, res) => { // GET EXTRA
     vehicleController.getExtras().then(
         (response) => {
             res.status(response.code).send(response);
@@ -215,7 +226,7 @@ app.delete('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
     )
 })
 
-app.put('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
+app.put('/rents/:id', auth, (req, res) => { //EDIT ONE RENT FROM ID
     rentController.getRent(req.params.id, req.body).then(
         (response) => {
             res.status(response.code).send(response);
