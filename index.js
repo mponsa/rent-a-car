@@ -4,6 +4,7 @@ const app = express();
 const cors = require('cors');
 const path = require('path');
 const port = 8080;
+const multer = require('multer');
 
 //Controllers.
 const vehicleController = require(path.join(__dirname, './src/controllers/vehicleController.js'))
@@ -11,10 +12,20 @@ const rentController = require(path.join(__dirname, './src/controllers/rentContr
 const auth = require(path.join(__dirname, './src/middleware/auth.js'))
 const validateQuery = require(path.join(__dirname, './src/middleware/validateQuery.js'))
 
-const { initializeApp } = require('./src/utils/firebase');
+const { initializeApp, initializeStorage } = require('./src/utils/firebase');
 const { response } = require('express');
 
 initializeApp();
+
+const bucket = initializeStorage();
+
+// Initiating a memory storage engine to store files as Buffer objects
+const uploader = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // limiting files size to 5 MB
+    },
+});
 
 app.use(cors({ origin: true }));
 app.use(express.json());
@@ -106,6 +117,49 @@ app.get('/vehicles/airport/:id', validateQuery, auth, (req, res) => { // GET ALL
         }
     );
 })
+
+app.get('/vehicles/images/:id', auth, async (req, res) => { // GET VEHICLE IMAGE URL 
+    try {
+        const img = bucket.file(req.params.id)
+        await img.getMetadata().then((data) => {
+            res.status(200).send({ fileName: req.params.id, fileLocation: data[0].metadata.fileLocation });
+        });
+    }
+    catch (error) {
+        res.status(400).send(`No se ha podido obtener la imagen: ${error}`);
+        return;
+    }
+})
+
+app.post('/vehicles/images/:id', auth, uploader.single('image'), async (req, res, next) => { // POST VEHICLE IMAGE
+    try {
+
+        if (!req.file) {
+            res.status(400).send('No se ha podido subir la imagen');
+            return;
+        }
+
+        const fileName = req.params.id;
+        const blob = bucket.file(fileName);
+        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURI(blob.name)}?alt=media`;
+
+        const blobWriter = blob.createWriteStream({
+            metadata: {
+                contentType: req.file.mimetype,
+                metadata: { fileLocation: publicUrl }
+            },
+        });
+
+        blobWriter.on('error', (err) => next(err));
+        blobWriter.on('finish', () => {
+            res.status(200).send({ fileName: fileName, fileLocation: publicUrl });
+        });
+        blobWriter.end(req.file.buffer);
+    } catch (error) {
+        res.status(400).send(`No se ha podido subir la imagen: ${error}`);
+        return;
+    }
+});
 
 app.post('/brands', [ // CREATE BRANDS
     check('brand', 'Debe ingresar una marca')
