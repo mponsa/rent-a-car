@@ -262,11 +262,13 @@ const getVehiclesFromAirport = async (id, from, to) => {
                 return { ...doc.data(), id: doc.id }
             });
 
-        const rents = (await rentController.getRents(from, to)).result;
+        const rents = (await rentController.getRents(from, moment(to).add(30, 'days').format().split('T')[0])).result;
 
-        updateRentStatus(vehicles, rents, parseDate(from))
+        updateRentStatus(vehicles, rents, parseDate(from), parseDate(to))
+        const availableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "available")
+        const notAvailableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "not_available")
 
-        return ({ vehicles, code: 200 });
+        return ({ availableVehicles, notAvailableVehicles, code: 200 });
     }
     catch (error) {
         let msg = `Error while getting all vehicles` + error.msg;
@@ -275,28 +277,38 @@ const getVehiclesFromAirport = async (id, from, to) => {
     }
 }
 
-const updateRentStatus = (vehicles, rents, from) => {
+const updateRentStatus = (vehicles, rents, from, to) => {
     vehicles.forEach(vehicle => {
-        const rentsForVehicle = rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
-            //Transform date.
-            rent.from = parseDate(rent.from)
-            rent.to = parseDate(rent.to)
-            return rent
-        })
-        vehicle.rent_status = buildRentStatus(rentsForVehicle, from)
+        const rentsForVehicle = []
+        if (rents) {
+            rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
+                //Transform date.
+                rent.from = parseDate(rent.from)
+                rent.to = parseDate(rent.to)
+                rentsForVehicle.push(rent)
+            })
+        }
+        vehicle.rent_status = buildRentStatus(rentsForVehicle, from, to)
     })
 
     console.log('Vehicles updated.')
 
 }
 
-const buildRentStatus = (rents, from) => {
-    if (rents) {
-        if (isRented(from, rents[0])) {
+const buildRentStatus = (rents, from, to) => {
+    if (rents.length > 0) {
+        var available = true
+        rents.forEach(rent => {
+            if (isRented(from, to, rent)) {
+                available = false
+            }
+        })
+        if (!available) {
             return {
                 status: 'not_available',
                 available_untill: null,
                 available_since: moment(rents[0].to).format().split('T')[0],
+                availability_range: getAvailabilityRanges(rents, from),
                 rents: rents.map(rent => {
                     rent.to = moment(rent.to).format().split('T')[0]
                     rent.from = moment(rent.from).format().split('T')[0]
@@ -307,7 +319,7 @@ const buildRentStatus = (rents, from) => {
 
         return {
             status: 'available',
-            available_untill: moment(rents[0].from).format().split('T')[0],
+            available_untill: moment(rents[rents.length - 1].from).format().split('T')[0],
             available_since: null,
             rents: rents.map(rent => {
                 rent.to = moment(rent.to).format().split('T')[0]
@@ -317,6 +329,7 @@ const buildRentStatus = (rents, from) => {
         }
     }
 
+
     return {
         status: 'available',
         available_untill: null,
@@ -325,8 +338,36 @@ const buildRentStatus = (rents, from) => {
     }
 }
 
-const isRented = (from, rent) => {
-    return rent.from <= from && rent.to >= from
+const isRented = (from, to, rent) => {
+    return moment(from).isSameOrBefore(rent.to) && moment(rent.from).isSameOrBefore(to);
+}
+
+const getAvailabilityRanges = (rents, from) => {
+    const availability = []
+
+    rents.forEach(getRanges)
+
+    function getRanges(rent, index, rents) {
+        if (rents.length > index + 1) {
+            if (moment(rents[index].from).subtract(2, 'days') > moment(rents[index + 1].to)) {
+                const availabilityRange = {
+                    from: moment(rents[index + 1].to).add(1, 'days').format().split('T')[0],
+                    to: moment(rents[index].from).subtract(1, 'days').format().split('T')[0]
+                }
+                availability.push(availabilityRange)
+            }
+        }
+        else if (rents.length == index + 1 && moment(from).isBefore(moment(rents[index].from))) {
+            const availabilityRange = {
+                from: moment(from).format().split('T')[0],
+                to: moment(rents[index].from).subtract(1, 'days').format().split('T')[0]
+            }
+            availability.push(availabilityRange)
+        }
+    }
+
+    return availability;
+
 }
 
 module.exports = {
