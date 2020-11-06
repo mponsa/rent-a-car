@@ -9,6 +9,7 @@ const multer = require('multer');
 //Controllers.
 const vehicleController = require(path.join(__dirname, './src/controllers/vehicleController.js'))
 const rentController = require(path.join(__dirname, './src/controllers/rentController.js'))
+const reportControler = require(path.join(__dirname, './src/controllers/reportController.js'))
 const auth = require(path.join(__dirname, './src/middleware/auth.js'))
 const validateQuery = require(path.join(__dirname, './src/middleware/validateQuery.js'))
 
@@ -282,6 +283,16 @@ app.delete('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
 
 app.put('/rents/:id', auth, (req, res) => { //EDIT ONE RENT FROM ID
     rentController.getRent(req.params.id, req.body).then(
+        (response) => {
+            res.status(response.code).send(response);
+        }
+    )
+})
+
+// PATH: REPORTS
+//app.get('/report/:airport', auth, (req, res) => { //GET REPORT
+app.get('/report', (req, res) => {
+    reportControler.createReport(req.query.airport).then(
         (response) => {
             res.status(response.code).send(response);
         }
