@@ -38,66 +38,66 @@ const createVehicle = async (body) => {
 }
 
 const createBrand = async (body) => {
-    try{
+    try {
         let brand = validateModel(body)
-        let id = await storeBrand(brand)
-        
+        let createdBrand = await storeBrand(brand)
+
         let msg = `Succesfully created brand`
         console.log(msg)
-        return ({msg, id, code:200})
-    }catch(error){
+        return ({ msg, id: createdBrand.id, code: 200 })
+    } catch (error) {
         let msg = `Error while creating brand: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
 const createModel = async (body) => {
-    try{
+    try {
         let model = validateModel(body)
-        let id = await storeModel(model)
-        
+        let createdModel = await storeModel(model)
+
         let msg = `Succesfully created model`
         console.log(msg)
-        return ({msg, id, code:200})
-    }catch(error){
+        return ({ msg, id: createdModel.id, code: 200 })
+    } catch (error) {
         let msg = `Error while creating model: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
 const createCategory = async (body) => {
-    try{
+    try {
         let category = validateModel(body)
-        let id = await storeCategory(category)
+        let createdCategory = await storeCategory(category)
 
         let msg = `Succesfully created category`
         console.log(msg)
-        return ({msg, id, code:200})
-    }catch(error){
+        return ({ msg, id: createdCategory.id, code: 200 })
+    } catch (error) {
         let msg = `Error while creating category: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
-const createExtra = async(body) => {
-    try{
+const createExtra = async (body) => {
+    try {
         let extra = validateModel(body)
         let id = await storeExtra(extra)
 
         let msg = `Succesfully created extra`
         console.log(msg)
-        return ({msg, id, code:200})
-    }catch(error){
+        return ({ msg, id: createExtra.id, code: 200 })
+    } catch (error) {
         let msg = `Error while creating extra: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
-const validateModel = (body) => {    
+const validateModel = (body) => {
     return body;
 }
 
@@ -143,7 +143,7 @@ const deleteVehicle = async (id) => {
 }
 
 const storeBrand = async (brand) => {
-    if(!brand.id){
+    if (!brand.id) {
         console.log(`Creating brand...`)
         let id = await admin.firestore().collection('brands').add(brand)
         return id;
@@ -151,7 +151,7 @@ const storeBrand = async (brand) => {
 }
 
 const storeModel = async (model) => {
-    if(!model.id){
+    if (!model.id) {
         console.log(`Creating model...`)
         let id = await admin.firestore().collection('models').add(model)
         return id;
@@ -159,7 +159,7 @@ const storeModel = async (model) => {
 }
 
 const storeCategory = async (category) => {
-    if(!category.id){
+    if (!category.id) {
         console.log(`Creating category...`)
         let id = await admin.firestore().collection('categories').add(category)
         return id;
@@ -167,7 +167,7 @@ const storeCategory = async (category) => {
 }
 
 const storeExtra = async (extra) => {
-    if(!extra.id){
+    if (!extra.id) {
         console.log(`Creating extra...`)
         let id = await admin.firestore().collection('extras').add(extra)
         return id;
@@ -193,50 +193,50 @@ const getVehicles = async () => {
 const getBrands = async () => {
     try {
         let brands = [];
-        brands = (await admin.firestore().collection('brands').get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});        
-        return ({brands, code:200});
+        brands = (await admin.firestore().collection('brands').get())._docs().map((doc) => { return { ...doc.data(), id: doc.id } });
+        return ({ brands, code: 200 });
     }
-    catch(error) {
+    catch (error) {
         let msg = `Error while getting all brands`;
         console.log(msg);
-        return ({msg, code: 500});
+        return ({ msg, code: 500 });
     }
 }
 
 const getModels = async (brand) => {
     try {
         let models = {};
-        models = (await admin.firestore().collection('models').where("brand", "==", brand).get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});
-        return ({models, code:200});
+        models = (await admin.firestore().collection('models').where("brand", "==", brand).get())._docs().map((doc) => { return { ...doc.data(), id: doc.id } });
+        return ({ models, code: 200 });
     }
-    catch(error) {
+    catch (error) {
         let msg = `Error while getting models: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
 const getCategories = async () => {
-    try{
+    try {
         let categories = [];
-        categories = (await admin.firestore().collection('categories').get())._docs().map((doc) => { return {...doc.data(), id:doc.id}});        
-        return ({categories, code:200});
-    }catch(error) {
+        categories = (await admin.firestore().collection('categories').get())._docs().map((doc) => { return { ...doc.data(), id: doc.id } });
+        return ({ categories, code: 200 });
+    } catch (error) {
         let msg = `Error while getting all categories`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
 const getExtras = async () => {
-    try{
+    try {
         let extras = [];
-        extras = (await admin.firestore().collection('extras').get())._docs().map((doc) => { return {...doc.data(), id: doc.id}});
-        return ({extras, code:200});
-    }catch(error) {
+        extras = (await admin.firestore().collection('extras').get())._docs().map((doc) => { return { ...doc.data(), id: doc.id } });
+        return ({ extras, code: 200 });
+    } catch (error) {
         let msg = `Error while getting all extras`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
@@ -261,12 +261,14 @@ const getVehiclesFromAirport = async (id, from, to) => {
             .get())._docs().map((doc) => {
                 return { ...doc.data(), id: doc.id }
             });
-        
-        const rents = (await rentController.getRents(from,to)).result;
 
-        updateRentStatus(vehicles, rents, parseDate(from))
-        
-        return ({ vehicles, code: 200 });
+        const rents = (await rentController.getRents(from, moment(to).add(30, 'days').format().split('T')[0])).result;
+
+        updateRentStatus(vehicles, rents, parseDate(from), parseDate(to))
+        const availableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "available")
+        const notAvailableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "not_available")
+
+        return ({ availableVehicles, notAvailableVehicles, code: 200 });
     }
     catch (error) {
         let msg = `Error while getting all vehicles` + error.msg;
@@ -275,28 +277,38 @@ const getVehiclesFromAirport = async (id, from, to) => {
     }
 }
 
-const updateRentStatus = (vehicles, rents, from) => {
+const updateRentStatus = (vehicles, rents, from, to) => {
     vehicles.forEach(vehicle => {
-        const rentsForVehicle = rents ? rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
-            //Transform date.
-            rent.from = parseDate(rent.from)
-            rent.to = parseDate(rent.to)
-            return rent
-        }) : undefined
-        vehicle.rent_status = buildRentStatus(rentsForVehicle, from)
+        const rentsForVehicle = []
+        if (rents) {
+            rents.filter(rent => rent.car_id === vehicle.id).map(rent => {
+                //Transform date.
+                rent.from = parseDate(rent.from)
+                rent.to = parseDate(rent.to)
+                rentsForVehicle.push(rent)
+            })
+        }
+        vehicle.rent_status = buildRentStatus(rentsForVehicle, from, to)
     })
 
     console.log('Vehicles updated.')
- 
+
 }
 
-const buildRentStatus = (rents, from) => {
-    if(rents){
-        if(isRented(from,rents[0])){
-            return{
+const buildRentStatus = (rents, from, to) => {
+    if (rents.length > 0) {
+        var available = true
+        rents.forEach(rent => {
+            if (isRented(from, to, rent)) {
+                available = false
+            }
+        })
+        if (!available) {
+            return {
                 status: 'not_available',
                 available_untill: null,
                 available_since: moment(rents[0].to).format().split('T')[0],
+                availability_range: getAvailabilityRanges(rents, from),
                 rents: rents.map(rent => {
                     rent.to = moment(rent.to).format().split('T')[0]
                     rent.from = moment(rent.from).format().split('T')[0]
@@ -304,10 +316,10 @@ const buildRentStatus = (rents, from) => {
                 })
             }
         }
-        
-        return{
+
+        return {
             status: 'available',
-            available_untill: moment(rents[0].from).format().split('T')[0],
+            available_untill: moment(rents[rents.length - 1].from).format().split('T')[0],
             available_since: null,
             rents: rents.map(rent => {
                 rent.to = moment(rent.to).format().split('T')[0]
@@ -317,31 +329,60 @@ const buildRentStatus = (rents, from) => {
         }
     }
 
-    return{
-        status:'available',
+
+    return {
+        status: 'available',
         available_untill: null,
         available_since: null,
         rents: []
     }
 }
 
-const isRented = (from, rent) => {
-    return rent.from <= from && rent.to >= from
+const isRented = (from, to, rent) => {
+    return moment(from).isSameOrBefore(rent.to) && moment(rent.from).isSameOrBefore(to);
 }
 
-module.exports = { 
-    createVehicle, 
-    createBrand, 
+const getAvailabilityRanges = (rents, from) => {
+    const availability = []
+
+    rents.forEach(getRanges)
+
+    function getRanges(rent, index, rents) {
+        if (rents.length > index + 1) {
+            if (moment(rents[index].from).subtract(2, 'days') > moment(rents[index + 1].to)) {
+                const availabilityRange = {
+                    from: moment(rents[index + 1].to).add(1, 'days').format().split('T')[0],
+                    to: moment(rents[index].from).subtract(1, 'days').format().split('T')[0]
+                }
+                availability.push(availabilityRange)
+            }
+        }
+        else if (rents.length == index + 1 && moment(from).isBefore(moment(rents[index].from))) {
+            const availabilityRange = {
+                from: moment(from).format().split('T')[0],
+                to: moment(rents[index].from).subtract(1, 'days').format().split('T')[0]
+            }
+            availability.push(availabilityRange)
+        }
+    }
+
+    return availability;
+
+}
+
+module.exports = {
+    createVehicle,
+    createBrand,
     createModel,
-    createCategory, 
+    createCategory,
     createExtra,
-    getVehicles, 
-    getBrands, 
+    getVehicles,
+    getBrands,
     getModels,
     getCategories,
-    getExtras, 
-    getVehicle, 
+    getExtras,
+    getVehicle,
     getVehiclesFromAirport,
-    updateVehicle, 
-    deleteVehicle 
+    updateVehicle,
+    deleteVehicle
 }
