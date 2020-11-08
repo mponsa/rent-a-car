@@ -17,28 +17,28 @@ const createRent = async (body) => {
     }
 }
 
-const validateModel = async (body) => { 
-    let rent = {...body}
+const validateModel = async (body) => {
+    let rent = { ...body }
     rent.timestamp = admin.firestore.FieldValue.serverTimestamp()
-    
-    const rents = (await getRentsForVehicle(rent.from, rent.to,rent.car_id)).result
-    
-    if(rents.length > 0){
+
+    const rents = (await getRentsForVehicle(rent.from, rent.to, rent.car_id)).result
+
+    if (rents.length > 0) {
         throw Error('Ya existe un alquiler para el vehículo en ese período. Intente nuevamente.')
     }
 
     rent.from = parseDate(rent.from)
     rent.to = parseDate(rent.to)
 
-    if(rent.from < new Date()){
+    if (rent.from < new Date()) {
         throw Error('No se puede crear un alquiler en el pasado.')
     }
 
-    if(rent.to < rent.from){
+    if (rent.to < rent.from) {
         throw Error('Rango inválido de fechas para el alquiler.')
     }
 
-    if(diffDatesInDays(rent.from, rent.to) < 1){
+    if (diffDatesInDays(rent.from, rent.to) < 1) {
         throw Error('El alquiler debe ser por lo menos de un día.')
     }
 
@@ -67,7 +67,7 @@ const getRents = async (from, to) => {
         snapshot.forEach(snapshot => {
             let data = snapshot.data()
             //Transform Timestamp
-            if (moment(data.to.toDate()).isBefore(moment(to))) {
+            if (moment(data.to.toDate().setHours(0)).isSameOrBefore(moment(to))) {
                 data.timestamp = moment(data.timestamp.toDate()).format()
                 data.from = moment(data.from.toDate()).format().split('T')[0]
                 data.to = moment(data.to.toDate()).format().split('T')[0]
@@ -88,44 +88,46 @@ const getRents = async (from, to) => {
     }
 }
 
-const getRentsForVehicle = async(from,to,vehicleId) => {
+const getRentsForVehicle = async (from, to, vehicleId) => {
     try {
         const dateFrom = parseDate(from)
         const dateTo = parseDate(to)
-        const snapshot = await admin.firestore().collection('rents').where('from', '>=', dateFrom, 'to', '<=', dateTo,'to','>=',dateFrom,'from','>=',dateTo,'car_id','==',vehicleId).get();
+        const snapshot = await admin.firestore().collection('rents').where('car_id', '==', vehicleId).where('from', '>=', dateFrom).get();
         const result = []
 
-        if(snapshot.empty){
-            return {result:[], code:200}
+        if (snapshot.empty) {
+            return { result: [], code: 200 }
         }
-        
+
         snapshot.forEach(snapshot => {
             let data = snapshot.data()
             //Transform Timestamp
-            data.timestamp = moment(data.timestamp.toDate()).format()
-            data.from = moment(data.from.toDate()).format().split('T')[0]
-            data.to = moment(data.to.toDate()).format().split('T')[0]
-            data.id = snapshot.id
-            result.push(data)
+            if (moment(data.to.toDate().setHours(0)).isSameOrBefore(moment(dateTo))) {
+                data.timestamp = moment(data.timestamp.toDate()).format()
+                data.from = moment(data.from.toDate()).format().split('T')[0]
+                data.to = moment(data.to.toDate()).format().split('T')[0]
+                data.id = snapshot.id
+                result.push(data)
+            }
         })
-    
-        result.sort((a,b) => {
+
+        result.sort((a, b) => {
             return Date.parse(b.from) - Date.parse(a.from)
         })
-        
-        return ({result, code:200});
-    }catch(error){
+
+        return ({ result, code: 200 });
+    } catch (error) {
         let msg = `Error while getting rent: ${error.message}`
         console.log(msg)
-        return ({msg, code: 500})
+        return ({ msg, code: 500 })
     }
 }
 
-const getRent = async(id) => {
+const getRent = async (id) => {
     try {
-        const rent = (await admin.firestore().collection('rents').where('id', '==', id))._docs().map((doc) => doc.data());
-        return ({rent, code:200});
-    } catch(error) {
+        const rent = (await admin.firestore().collection('rents').doc(id).get()).data()
+        return ({ rent, code: 200 });
+    } catch (error) {
         let msg = `Error while getting rent: ${error.message}`
         console.log(msg)
         return ({ msg, code: 500 })
@@ -134,7 +136,15 @@ const getRent = async(id) => {
 
 const deleteRent = async (id) => {
     try {
-        await admin.firestore().collection('rents').doc(id).delete()
+        const rent = (await admin.firestore().collection('rents').doc(id).get()).data()
+        if (rent) {
+            await admin.firestore().collection('rents').doc(id).delete()
+            const msg = 'Succesfully deleted rent'
+            return ({ msg, code: 200 });
+        }
+        const msg = `Rent with id ${id} doesn't exist`
+        return ({ msg, code: 400 });
+
     } catch (error) {
         let msg = `Error while deleting rent: ${error.message}`
         console.log(msg)
@@ -145,9 +155,16 @@ const deleteRent = async (id) => {
 const modifyRent = async (id, body) => {
     try {
         validateUpdate(body)
-        await admin.firestore().collection('rents').doc(id).update(body)
+        const rent = (await admin.firestore().collection('rents').doc(id).get()).data()
+        if (rent) {
+            await admin.firestore().collection('rents').doc(id).update(body)
+            const msg = 'Succesfully modified rent'
+            return ({ msg, code: 200 });
+        }
+        const msg = `Rent with id ${id} doesn't exist`
+        return ({ msg, code: 400 });
     } catch (error) {
-        let msg = `Error while deleting rent: ${error.message}`
+        let msg = `Error while updating rent: ${error.message}`
         console.log(msg)
         return ({ msg, code: 500 })
     }
@@ -163,8 +180,7 @@ const validateUpdate = (body) => {
             body[key] = parseDate(body[key])
         })
     }
-
-    throw Error('Invalid update fields!')
+    else throw Error('Invalid update fields!')
 }
 
 module.exports = { createRent, getRent, getRents, getRentsForVehicle, deleteRent, modifyRent }

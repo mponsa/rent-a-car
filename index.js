@@ -274,7 +274,7 @@ app.get('/rents/:id', auth, (req, res) => { //GET ONE RENT FROM ID
 })
 
 app.delete('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
-    rentController.getRent(req.params.id).then(
+    rentController.deleteRent(req.params.id).then(
         (response) => {
             res.status(response.code).send(response);
         }
@@ -282,7 +282,7 @@ app.delete('/rents/:id', auth, (req, res) => { //DELETE ONE RENT FROM ID
 })
 
 app.put('/rents/:id', auth, (req, res) => { //EDIT ONE RENT FROM ID
-    rentController.getRent(req.params.id, req.body).then(
+    rentController.modifyRent(req.params.id, req.body).then(
         (response) => {
             res.status(response.code).send(response);
         }
