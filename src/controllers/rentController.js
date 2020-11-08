@@ -53,11 +53,47 @@ const storeRent = async (rent) => {
     }
 }
 
+//Returns active rents in a time-frame
 const getRents = async (from, to) => {
     try {
         const dateFrom = parseDate(from)
         const dateTo = parseDate(to)
-        const snapshot = await admin.firestore().collection('rents').where('from', '>=', dateFrom).get();
+        const snapshot = await admin.firestore().collection('rents').where('from', '>=', dateFrom,'to').get();
+        const result = []
+
+        if (snapshot.empty) {
+            return []
+        }
+
+        snapshot.forEach(snapshot => {
+            let data = snapshot.data()
+            //Transform Timestamp
+            if (moment(data.to.toDate()).isBefore(moment(to))) {
+                data.timestamp = moment(data.timestamp.toDate()).format()
+                data.from = moment(data.from.toDate()).format().split('T')[0]
+                data.to = moment(data.to.toDate()).format().split('T')[0]
+                result.push(data)
+                data.id = snapshot.id
+            }
+        })
+        result.sort((a, b) => {
+            return Date.parse(b.from) - Date.parse(a.from)
+        })
+
+        return ({ result, code: 200 });
+    }
+    catch (error) {
+        let msg = `Error while getting rent: ${error.message}`
+        console.log(msg)
+        return ({ msg, code: 500 })
+    }
+}
+//Returns created rents in a time-frame
+const getCreatedRents = async(from,to) => {
+    try {
+        const dateFrom = parseDate(from)
+        const dateTo = parseDate(to)
+        const snapshot = await admin.firestore().collection('rents').where('timestamp', '>=', dateFrom,'timestamp','<=',dateTo).get();
         const result = []
 
         if (snapshot.empty) {
@@ -167,4 +203,4 @@ const validateUpdate = (body) => {
     throw Error('Invalid update fields!')
 }
 
-module.exports = { createRent, getRent, getRents, getRentsForVehicle, deleteRent, modifyRent }
+module.exports = { createRent, getRent, getRents,getCreatedRents, getRentsForVehicle, deleteRent, modifyRent }
