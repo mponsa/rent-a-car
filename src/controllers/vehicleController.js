@@ -24,9 +24,8 @@ let vehicle = {
 
 const createVehicle = async (body) => {
     try {
-        let vehicle = validateModel(body)
-        let createdVehicle = await storeVehicle(vehicle)
-
+        let vehicle = await validateModel(body)       
+        let createdVehicle = await storeVehicle(vehicle)   
         let msg = `Succesfully created vehicle`
         console.log(msg)
         return ({ msg, id: createdVehicle.id, code: 200 })
@@ -35,6 +34,19 @@ const createVehicle = async (body) => {
         console.log(msg)
         return ({ msg, code: 500 })
     }
+}
+
+const validateModel = async (body) => {
+    const licensePlate = body.licensePlate
+    const vehicles = (await admin.firestore().collection('vehicles').where('licensePlate', '==', licensePlate).get())._docs().map((doc) => {
+        return { ...doc.data(), id: doc.id }
+    });
+
+    if(vehicles.length > 0){
+        throw new Error("La patente del vehículo ingresado ya está registrada en el sistema.")
+    }
+
+    return body;
 }
 
 const createBrand = async (body) => {
@@ -97,15 +109,15 @@ const createExtra = async (body) => {
     }
 }
 
-const validateModel = (body) => {
-    return body;
-}
+
 
 const storeVehicle = async (vehicle) => {
     if (!vehicle.id) {
         console.log(`Creating vehicle...`)
         let createdVehicle = await admin.firestore().collection('vehicles').add(vehicle)
         return createdVehicle;
+    }else{
+        throw new Error("Campo 'id' no soportado para la operación de creación.")
     }
 }
 
