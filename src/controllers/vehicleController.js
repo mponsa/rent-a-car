@@ -1,7 +1,8 @@
 const admin = require('firebase-admin');
 const moment = require('moment');
 const rentController = require('./rentController');
-const { parseDate } = require('../utils/utils')
+const { parseDate } = require('../utils/utils');
+const { forEach } = require('async');
 
 
 let vehicle = {
@@ -24,8 +25,8 @@ let vehicle = {
 
 const createVehicle = async (body) => {
     try {
-        let vehicle = await validateModel(body)       
-        let createdVehicle = await storeVehicle(vehicle)   
+        let vehicle = await validateModel(body)
+        let createdVehicle = await storeVehicle(vehicle)
         let msg = `Succesfully created vehicle`
         console.log(msg)
         return ({ msg, id: createdVehicle.id, code: 200 })
@@ -42,7 +43,7 @@ const validateModel = async (body) => {
         return { ...doc.data(), id: doc.id }
     });
 
-    if(vehicles.length > 0){
+    if (vehicles.length > 0) {
         throw new Error("La patente del vehículo ingresado ya está registrada en el sistema.")
     }
 
@@ -116,7 +117,7 @@ const storeVehicle = async (vehicle) => {
         console.log(`Creating vehicle...`)
         let createdVehicle = await admin.firestore().collection('vehicles').add(vehicle)
         return createdVehicle;
-    }else{
+    } else {
         throw new Error("Campo 'id' no soportado para la operación de creación.")
     }
 }
@@ -279,8 +280,8 @@ const getVehiclesFromAirport = async (id, from, to) => {
         updateRentStatus(vehicles, rents, parseDate(from), parseDate(to))
         const availableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "available")
         const notAvailableVehicles = vehicles.filter(vehicle => vehicle.rent_status.status === "not_available")
-
-        return ({ availableVehicles, notAvailableVehicles, code: 200 });
+        const availableFilters = buildAvailableFilters(availableVehicles)
+        return ({ availableVehicles, notAvailableVehicles, availableFilters, code: 200 });
     }
     catch (error) {
         let msg = `Error while getting all vehicles` + error.msg;
@@ -381,6 +382,33 @@ const getAvailabilityRanges = (rents, from) => {
     return availability;
 
 }
+
+const buildAvailableFilters = (vehicles) => {
+    const brands = [];
+    const models = [];
+    const extras = [];
+    const categories = [];
+    vehicles.forEach(vehicle => {
+        if (brands.indexOf(vehicle.brand) === -1)
+            brands.push(vehicle.brand)
+        if (models.indexOf(vehicle.model) === -1)
+            models.push(vehicle.model)
+        if (categories.indexOf(vehicle.category) === -1)
+            categories.push(vehicle.category)
+        vehicle.extras.forEach(extra => {
+            if (extras.indexOf(extra) === -1)
+                extras.push(extra)
+        })
+    })
+
+    return {
+        brands: brands,
+        models: models,
+        extras: extras,
+        categories: categories
+    }
+}
+
 
 module.exports = {
     createVehicle,
