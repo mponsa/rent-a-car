@@ -41,7 +41,6 @@ const createReport = async(airport) => {
             vehicles = vehicles.filter(v => v.airport === airport)
         }
         const rents = (await rentController.getCreatedRents(from, to)).result.filter(rent => vehicles.map(v => v.id).indexOf(rent.car_id) >= 0)
-
         report_vehicles.available = vehicles.filter(item => { return item.active}).length;
         // obtencion de los alquileres de vehiculos filtrados
 
@@ -165,7 +164,7 @@ const getCashEarned = (date,rents,vehicles) => {
         const upperBound = parseDate(rent.to)
         //if is between rent time-frame
         if (lowerBound <= givenDay && givenDay <= upperBound){
-            cash += vehicles.filter(v => v.id = rent.car_id)[0].price
+            cash += parseInt(vehicles.filter(v => v.id = rent.car_id)[0].price)
         }
     })
 
