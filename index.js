@@ -290,8 +290,7 @@ app.put('/rents/:id', auth, (req, res) => { //EDIT ONE RENT FROM ID
 })
 
 // PATH: REPORTS
-//app.get('/report/:airport', auth, (req, res) => { //GET REPORT
-app.get('/report', (req, res) => {
+app.get('/report', auth, (req, res) => { //GET REPORT
     reportControler.createReport(req.query.airport).then(
         (response) => {
             res.status(response.code).send(response);
